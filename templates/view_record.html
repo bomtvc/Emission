@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Chi tiết bản ghi - Hệ thống Tính toán Phát thải{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-eye"></i> Chi tiết Bản ghi Phát thải</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Thông tin cơ bản -->
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3"><i class="fas fa-info-circle"></i> Thông tin cơ bản</h6>
+                        
+                        <table class="table table-borderless">
+                            <tr>
+                                <td class="fw-bold">STT:</td>
+                                <td>{{ record['STT'] }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Tên Nguồn thải:</td>
+                                <td>{{ record['Tên Nguồn thải'] }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Lưu lượng:</td>
+                                <td>{{ "{:,.2f}".format(record['Lưu lượng (Nm3/h)']) }} Nm³/h</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Thời gian xả thải:</td>
+                                <td>{{ "{:,.2f}".format(record['Tổng thời gian xả thải trong kỳ (Giờ)']) }} Giờ</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Đơn vị phân tích:</td>
+                                <td>{{ record['Thông tin đơn vị Phân tích'] or 'Không có thông tin' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- Thông số phát thải -->
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3"><i class="fas fa-flask"></i> Thông số phát thải</h6>
+                        
+                        <table class="table table-borderless">
+                            <tr>
+                                <td class="fw-bold">Bụi:</td>
+                                <td>{{ "{:,.2f}".format(record['Bụi (mg/Nm3)']) }} mg/Nm³</td>
+                                <td class="text-muted">(TC: {{ "{:,.2f}".format(record['Tiêu chuẩn Bụi']) }})</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">NOx:</td>
+                                <td>{{ "{:,.2f}".format(record['NOx (gồm NO2 và NO) (mg/Nm3)']) }} mg/Nm³</td>
+                                <td class="text-muted">(TC: {{ "{:,.2f}".format(record['Tiêu chuẩn NOx']) }})</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">SOx:</td>
+                                <td>{{ "{:,.2f}".format(record['SOx (mg/Nm3)']) }} mg/Nm³</td>
+                                <td class="text-muted">(TC: {{ "{:,.2f}".format(record['Tiêu chuẩn SOx']) }})</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">CO:</td>
+                                <td>{{ "{:,.2f}".format(record['CO (mg/Nm3)']) }} mg/Nm³</td>
+                                <td class="text-muted">(TC: {{ "{:,.2f}".format(record['Tiêu chuẩn CO']) }})</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <!-- Kết quả tính toán -->
+                <h6 class="text-success mb-3"><i class="fas fa-calculator"></i> Kết quả tính toán</h6>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-secondary">Mức thu phí biến đổi</h6>
+                        <table class="table table-sm table-striped">
+                            <tr>
+                                <td>Bụi:</td>
+                                <td class="text-end">{{ record['Mức thu phí biến đổi của Bụi'] }}</td>
+                            </tr>
+                            <tr>
+                                <td>NOx:</td>
+                                <td class="text-end">{{ record['Mức thu phí biến đổi của Nox'] }}</td>
+                            </tr>
+                            <tr>
+                                <td>SOx:</td>
+                                <td class="text-end">{{ record['Mức thu phí biến đổi của Sox'] }}</td>
+                            </tr>
+                            <tr>
+                                <td>CO:</td>
+                                <td class="text-end">{{ record['Mức thu phí biến đổi của CO'] }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="text-secondary">Giá trị Ci (VNĐ)</h6>
+                        <table class="table table-sm table-striped">
+                            <tr>
+                                <td>Ci (Bụi):</td>
+                                <td class="text-end">{{ "{:,.0f}".format(record['Ci (Bụi)']) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Ci (NOx):</td>
+                                <td class="text-end">{{ "{:,.0f}".format(record['Ci (NOx)']) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Ci (SOx):</td>
+                                <td class="text-end">{{ "{:,.0f}".format(record['Ci (SOx)']) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Ci (CO):</td>
+                                <td class="text-end">{{ "{:,.0f}".format(record['Ci (CO)']) }}</td>
+                            </tr>
+                            <tr class="table-warning">
+                                <td class="fw-bold">Tổng Ci:</td>
+                                <td class="text-end fw-bold">{{ "{:,.0f}".format(record['Ci']) }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <!-- Công thức tính toán -->
+                <div class="accordion" id="formulaAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingFormula">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFormula">
+                                <i class="fas fa-formula"></i>&nbsp; Xem công thức tính toán
+                            </button>
+                        </h2>
+                        <div id="collapseFormula" class="accordion-collapse collapse" data-bs-parent="#formulaAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Mức thu phí biến đổi:</h6>
+                                        <p class="small text-muted">
+                                            Nếu (Tiêu chuẩn - Thực tế)/Tiêu chuẩn × 100 ≥ 0.3 → 0.5<br>
+                                            Ngược lại < 0.3 → 0.75
+                                        </p>
+                                        
+                                        <h6>Hệ số phí:</h6>
+                                        <ul class="small text-muted">
+                                            <li>Fee_Bụi = 800</li>
+                                            <li>Fee_NOx = 700</li>
+                                            <li>Fee_SOx = 800</li>
+                                            <li>Fee_CO = 500</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Công thức Ci:</h6>
+                                        <p class="small text-muted">
+                                            Ci = Lưu lượng × Thời gian × Nồng độ × Mức thu phí × Fee<br><br>
+                                            <strong>Tổng Ci = Ci(Bụi) + Ci(NOx) + Ci(SOx) + Ci(CO)</strong>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                    </a>
+                    <div>
+                        <a href="{{ url_for('delete_record', index=index) }}" 
+                           class="btn btn-danger"
+                           onclick="return confirm('Bạn có chắc chắn muốn xóa bản ghi này?')">
+                            <i class="fas fa-trash"></i> Xóa bản ghi
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

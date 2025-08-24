@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Thêm dữ liệu - Hệ thống Tính toán Phát thải{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-plus"></i> Thêm Dữ liệu Phát thải Mới</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="emissionForm">
+                    <div class="row">
+                        <!-- Thông tin cơ bản -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3"><i class="fas fa-info-circle"></i> Thông tin cơ bản</h6>
+                            
+                            <div class="mb-3">
+                                <label for="stt" class="form-label">STT <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="stt" name="stt" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="ten_nguon_thai" class="form-label">Tên Nguồn thải <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="ten_nguon_thai" name="ten_nguon_thai" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="luu_luong" class="form-label">Lưu lượng (Nm³/h) <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" class="form-control" id="luu_luong" name="luu_luong" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="tong_thoi_gian" class="form-label">Tổng thời gian xả thải trong kỳ (Giờ) <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" class="form-control" id="tong_thoi_gian" name="tong_thoi_gian" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="thong_tin_don_vi" class="form-label">Thông tin đơn vị Phân tích</label>
+                                <textarea class="form-control" id="thong_tin_don_vi" name="thong_tin_don_vi" rows="3"></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Thông số phát thải -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3"><i class="fas fa-flask"></i> Thông số phát thải</h6>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label for="bui" class="form-label">Bụi (mg/Nm³) <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" class="form-control" id="bui" name="bui" required>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label for="tieu_chuan_bui" class="form-label">Tiêu chuẩn Bụi <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" class="form-control" id="tieu_chuan_bui" name="tieu_chuan_bui" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label for="nox" class="form-label">NOx (mg/Nm³) <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" class="form-control" id="nox" name="nox" required>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label for="tieu_chuan_nox" class="form-label">Tiêu chuẩn NOx <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" class="form-control" id="tieu_chuan_nox" name="tieu_chuan_nox" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label for="sox" class="form-label">SOx (mg/Nm³) <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" class="form-control" id="sox" name="sox" required>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label for="tieu_chuan_sox" class="form-label">Tiêu chuẩn SOx <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" class="form-control" id="tieu_chuan_sox" name="tieu_chuan_sox" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label for="co" class="form-label">CO (mg/Nm³) <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" class="form-control" id="co" name="co" required>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label for="tieu_chuan_co" class="form-label">Tiêu chuẩn CO <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" class="form-control" id="tieu_chuan_co" name="tieu_chuan_co" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                        <div>
+                            <button type="button" class="btn btn-info me-2" onclick="previewCalculation()">
+                                <i class="fas fa-calculator"></i> Xem trước tính toán
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Lưu dữ liệu
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xem trước tính toán -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-calculator"></i> Xem trước kết quả tính toán</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="previewContent">
+                <!-- Nội dung sẽ được load bằng JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function previewCalculation() {
+    // Lấy dữ liệu từ form
+    const formData = new FormData(document.getElementById('emissionForm'));
+    
+    // Kiểm tra các trường bắt buộc
+    const requiredFields = ['luu_luong', 'tong_thoi_gian', 'bui', 'tieu_chuan_bui', 'nox', 'tieu_chuan_nox', 'sox', 'tieu_chuan_sox', 'co', 'tieu_chuan_co'];
+    let isValid = true;
+    
+    for (let field of requiredFields) {
+        if (!formData.get(field) || formData.get(field) === '') {
+            isValid = false;
+            break;
+        }
+    }
+    
+    if (!isValid) {
+        alert('Vui lòng nhập đầy đủ các trường bắt buộc để xem trước tính toán!');
+        return;
+    }
+    
+    // Gửi request để tính toán
+    fetch('/preview_calculation', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('previewContent').innerHTML = data.html;
+            new bootstrap.Modal(document.getElementById('previewModal')).show();
+        } else {
+            alert('Có lỗi xảy ra: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi tính toán!');
+    });
+}
+</script>
+{% endblock %}

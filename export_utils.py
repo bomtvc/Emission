@@ -1,0 +1,239 @@
+import pandas as pd
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+from openpyxl.utils.dataframe import dataframe_to_rows
+from docx import Document
+from docx.shared import Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.table import WD_TABLE_ALIGNMENT
+import os
+from datetime import datetime
+
+
+class ExcelExporter:
+    """Class để xuất dữ liệu ra file Excel"""
+    
+    def __init__(self):
+        self.workbook = Workbook()
+        self.worksheet = self.workbook.active
+        self.worksheet.title = "Dữ liệu Phát thải"
+    
+    def export_data(self, records_data, filename=None):
+        """
+        Xuất dữ liệu ra file Excel với định dạng đẹp
+        """
+        if not filename:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"du_lieu_phat_thai_{timestamp}.xlsx"
+        
+        # Tạo DataFrame từ dữ liệu
+        df = pd.DataFrame(records_data)
+        
+        # Định nghĩa thứ tự cột
+        column_order = [
+            'STT', 'Tên Nguồn thải', 'Lưu lượng (Nm3/h)', 
+            'Tổng thời gian xả thải trong kỳ (Giờ)', 'Thông tin đơn vị Phân tích',
+            'Bụi (mg/Nm3)', 'Tiêu chuẩn Bụi', 'NOx (gồm NO2 và NO) (mg/Nm3)', 'Tiêu chuẩn NOx',
+            'SOx (mg/Nm3)', 'Tiêu chuẩn SOx', 'CO (mg/Nm3)', 'Tiêu chuẩn CO',
+            'Mức thu phí biến đổi của Bụi', 'Mức thu phí biến đổi của Nox', 
+            'Mức thu phí biến đổi của Sox', 'Mức thu phí biến đổi của CO',
+            'Ci (Bụi)', 'Ci (NOx)', 'Ci (SOx)', 'Ci (CO)', 'Ci'
+        ]
+        
+        # Sắp xếp lại cột theo thứ tự mong muốn
+        df = df.reindex(columns=column_order)
+        
+        # Thêm tiêu đề
+        self.worksheet['A1'] = 'BÁO CÁO DỮ LIỆU PHÁT THẢI VÀ TÍNH TOÁN PHÍ MÔI TRƯỜNG'
+        self.worksheet.merge_cells('A1:V1')
+        
+        # Thêm thông tin ngày tạo
+        self.worksheet['A2'] = f'Ngày tạo: {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}'
+        self.worksheet.merge_cells('A2:V2')
+        
+        # Thêm dữ liệu từ hàng 4
+        for r in dataframe_to_rows(df, index=False, header=True):
+            self.worksheet.append(r)
+        
+        # Định dạng tiêu đề chính
+        title_cell = self.worksheet['A1']
+        title_cell.font = Font(bold=True, size=16)
+        title_cell.alignment = Alignment(horizontal='center', vertical='center')
+        title_cell.fill = PatternFill(start_color='366092', end_color='366092', fill_type='solid')
+        title_cell.font = Font(bold=True, size=16, color='FFFFFF')
+        
+        # Định dạng ngày tạo
+        date_cell = self.worksheet['A2']
+        date_cell.font = Font(italic=True, size=10)
+        date_cell.alignment = Alignment(horizontal='center')
+        
+        # Định dạng header
+        header_row = 4
+        for col in range(1, len(column_order) + 1):
+            cell = self.worksheet.cell(row=header_row, column=col)
+            cell.font = Font(bold=True, color='FFFFFF')
+            cell.fill = PatternFill(start_color='4472C4', end_color='4472C4', fill_type='solid')
+            cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+            cell.border = Border(
+                left=Side(style='thin'),
+                right=Side(style='thin'),
+                top=Side(style='thin'),
+                bottom=Side(style='thin')
+            )
+        
+        # Định dạng dữ liệu
+        for row in range(header_row + 1, self.worksheet.max_row + 1):
+            for col in range(1, len(column_order) + 1):
+                cell = self.worksheet.cell(row=row, column=col)
+                cell.border = Border(
+                    left=Side(style='thin'),
+                    right=Side(style='thin'),
+                    top=Side(style='thin'),
+                    bottom=Side(style='thin')
+                )
+                
+                # Căn giữa cho cột STT
+                if col == 1:
+                    cell.alignment = Alignment(horizontal='center')
+                # Căn phải cho các cột số
+                elif col in [3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]:
+                    cell.alignment = Alignment(horizontal='right')
+                    # Định dạng số cho các cột tiền tệ
+                    if col in [18, 19, 20, 21, 22]:
+                        cell.number_format = '#,##0'
+        
+        # Tự động điều chỉnh độ rộng cột
+        from openpyxl.utils import get_column_letter
+
+        for col_num in range(1, len(column_order) + 1):
+            max_length = 0
+            column_letter = get_column_letter(col_num)
+
+            # Tìm độ dài tối đa trong cột (bỏ qua merged cells)
+            for row_num in range(4, self.worksheet.max_row + 1):  # Bắt đầu từ hàng dữ liệu
+                cell = self.worksheet.cell(row=row_num, column=col_num)
+                try:
+                    if cell.value and len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+
+            # Kiểm tra header length
+            header_cell = self.worksheet.cell(row=4, column=col_num)
+            if header_cell.value and len(str(header_cell.value)) > max_length:
+                max_length = len(str(header_cell.value))
+
+            adjusted_width = min(max(max_length + 2, 10), 50)  # Tối thiểu 10, tối đa 50
+            self.worksheet.column_dimensions[column_letter].width = adjusted_width
+        
+        # Lưu file
+        filepath = os.path.join('uploads', filename)
+        os.makedirs('uploads', exist_ok=True)
+        self.workbook.save(filepath)
+        
+        return filepath
+
+
+class WordExporter:
+    """Class để xuất dữ liệu ra file Word"""
+    
+    def __init__(self):
+        self.document = Document()
+    
+    def export_data(self, records_data, filename=None):
+        """
+        Xuất dữ liệu ra file Word với template
+        """
+        if not filename:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"bao_cao_phat_thai_{timestamp}.docx"
+        
+        # Thêm tiêu đề
+        title = self.document.add_heading('BÁO CÁO DỮ LIỆU PHÁT THẢI VÀ TÍNH TOÁN PHÍ MÔI TRƯỜNG', 0)
+        title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        
+        # Thêm thông tin ngày tạo
+        date_para = self.document.add_paragraph(f'Ngày tạo: {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')
+        date_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        
+        # Thêm đoạn mở đầu
+        self.document.add_paragraph()
+        intro = self.document.add_paragraph(
+            'Báo cáo này tổng hợp dữ liệu phát thải và kết quả tính toán phí bảo vệ môi trường '
+            'đối với các nguồn thải khí vào môi trường không khí.'
+        )
+        
+        # Thêm bảng tổng quan
+        self.document.add_heading('1. TỔNG QUAN', level=1)
+        
+        total_records = len(records_data)
+        total_ci = sum(record['Ci'] for record in records_data)
+        
+        overview_para = self.document.add_paragraph()
+        overview_para.add_run(f'• Tổng số nguồn thải: ').bold = True
+        overview_para.add_run(f'{total_records} nguồn')
+        overview_para.add_run(f'\n• Tổng phí bảo vệ môi trường: ').bold = True
+        overview_para.add_run(f'{total_ci:,.0f} VNĐ')
+        
+        # Thêm bảng chi tiết
+        self.document.add_heading('2. CHI TIẾT DỮ LIỆU PHÁT THẢI', level=1)
+        
+        if records_data:
+            # Tạo bảng
+            table = self.document.add_table(rows=1, cols=9)
+            table.style = 'Table Grid'
+            table.alignment = WD_TABLE_ALIGNMENT.CENTER
+            
+            # Header
+            header_cells = table.rows[0].cells
+            headers = ['STT', 'Tên Nguồn thải', 'Lưu lượng\n(Nm³/h)', 'Thời gian\n(Giờ)', 
+                      'Bụi\n(mg/Nm³)', 'NOx\n(mg/Nm³)', 'SOx\n(mg/Nm³)', 'CO\n(mg/Nm³)', 'Ci (VNĐ)']
+            
+            for i, header in enumerate(headers):
+                header_cells[i].text = header
+                header_cells[i].paragraphs[0].runs[0].bold = True
+                header_cells[i].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            
+            # Dữ liệu
+            for record in records_data:
+                row_cells = table.add_row().cells
+                row_cells[0].text = str(record['STT'])
+                row_cells[1].text = record['Tên Nguồn thải']
+                row_cells[2].text = f"{record['Lưu lượng (Nm3/h)']:,.2f}"
+                row_cells[3].text = f"{record['Tổng thời gian xả thải trong kỳ (Giờ)']:,.2f}"
+                row_cells[4].text = f"{record['Bụi (mg/Nm3)']:,.2f}"
+                row_cells[5].text = f"{record['NOx (gồm NO2 và NO) (mg/Nm3)']:,.2f}"
+                row_cells[6].text = f"{record['SOx (mg/Nm3)']:,.2f}"
+                row_cells[7].text = f"{record['CO (mg/Nm3)']:,.2f}"
+                row_cells[8].text = f"{record['Ci']:,.0f}"
+                
+                # Căn giữa cho cột STT
+                row_cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                # Căn phải cho các cột số
+                for i in range(2, 9):
+                    row_cells[i].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        
+        # Thêm phần công thức tính toán
+        self.document.add_heading('3. CÔNG THỨC TÍNH TOÁN', level=1)
+        
+        formula_para = self.document.add_paragraph()
+        formula_para.add_run('Mức thu phí biến đổi:\n').bold = True
+        formula_para.add_run('• Nếu (Tiêu chuẩn - Thực tế)/Tiêu chuẩn × 100 ≥ 0.3 → Hệ số = 0.5\n')
+        formula_para.add_run('• Ngược lại < 0.3 → Hệ số = 0.75\n\n')
+        
+        formula_para.add_run('Hệ số phí:\n').bold = True
+        formula_para.add_run('• Fee_Bụi = 800 VNĐ\n')
+        formula_para.add_run('• Fee_NOx = 700 VNĐ\n')
+        formula_para.add_run('• Fee_SOx = 800 VNĐ\n')
+        formula_para.add_run('• Fee_CO = 500 VNĐ\n\n')
+        
+        formula_para.add_run('Công thức Ci:\n').bold = True
+        formula_para.add_run('Ci = Lưu lượng × Thời gian × Nồng độ × Mức thu phí × Fee\n\n')
+        formula_para.add_run('Tổng Ci = Ci(Bụi) + Ci(NOx) + Ci(SOx) + Ci(CO)').bold = True
+        
+        # Lưu file
+        filepath = os.path.join('uploads', filename)
+        os.makedirs('uploads', exist_ok=True)
+        self.document.save(filepath)
+        
+        return filepath
