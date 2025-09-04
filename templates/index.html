@@ -32,6 +32,14 @@
                             <i class="fas fa-folder-plus"></i> Tạo Profile Mới
                         </a>
                         {% if current_profile %}
+                        <a href="{{ url_for('export_json') }}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-file-code"></i> Xuất JSON
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('import_json') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-file-import"></i> Nhập JSON
+                        </a>
+                        {% if current_profile %}
                         <a href="{{ url_for('delete_profile', index=current_profile_index) }}"
                            class="btn btn-danger btn-sm"
                            onclick="return confirm('Bạn có chắc chắn muốn xóa profile này và tất cả dữ liệu bên trong?')">
@@ -43,9 +51,20 @@
 
                 {% if current_profile %}
                 <div class="alert alert-success">
-                    <strong>{{ current_profile.name }}</strong>
-                    {% if current_profile.description %} - {{ current_profile.description }}{% endif %}
-                    <br><small class="text-muted">Tạo lúc: {{ current_profile.created_date }}</small>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>{{ current_profile.name }}</strong>
+                            {% if current_profile.description %} - {{ current_profile.description }}{% endif %}
+                            <br><small class="text-muted">Tạo lúc: {{ current_profile.created_date }}</small>
+                        </div>
+                        <div class="col-md-6">
+                            {% if current_profile.ten_cong_ty %}
+                            <strong>{{ current_profile.ten_cong_ty }}</strong>
+                            {% if current_profile.mst %}<br><small>MST: {{ current_profile.mst }}</small>{% endif %}
+                            {% if current_profile.dia_chi %}<br><small>{{ current_profile.dia_chi }}</small>{% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
                 {% endif %}
             </div>
@@ -77,7 +96,7 @@
                             <a href="{{ url_for('export_word') }}" class="btn btn-info btn-sm">
                                 <i class="fas fa-file-word"></i> Xuất Word
                             </a>
-                            <a href="{{ url_for('clear_all') }}" class="btn btn-danger btn-sm" 
+                            <a href="{{ url_for('clear_all') }}" class="btn btn-danger btn-sm"
                                onclick="return confirm('Bạn có chắc chắn muốn xóa tất cả dữ liệu?')">
                                 <i class="fas fa-trash"></i> Xóa tất cả
                             </a>
@@ -142,6 +161,15 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Button thêm nguồn thải ở phía dưới bên phải -->
+                    {% if current_profile %}
+                    <div class="d-flex justify-content-end mt-3">
+                        <a href="{{ url_for('add_record') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Thêm nguồn thải
+                        </a>
+                    </div>
+                    {% endif %}
                 {% else %}
                     <div class="text-center py-5">
                         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>

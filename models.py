@@ -134,9 +134,22 @@ class Profile:
     """
 
     def __init__(self, name="", description=""):
+        # Thông tin cơ bản (tương thích với code cũ)
         self.name = name
         self.description = description
         self.created_date = ""
+
+        # Thông tin công ty mới
+        self.ten_cong_ty = ""
+        self.dia_chi = ""
+        self.mst = ""
+        self.dien_thoai = ""
+        self.fax = ""
+        self.email = ""
+        self.tai_khoan_ngan_hang = ""
+        self.tai_ngan_hang = ""
+        self.loai_hinh_san_xuat = ""
+
         self.records = []
 
     def add_record(self, record):
@@ -211,6 +224,75 @@ class Profile:
             'record_count': len(self.records),
             'total_ci': sum(record.ci_total for record in self.records)
         }
+
+    def to_json_dict(self):
+        """Chuyển đổi profile thành dictionary để xuất JSON (bao gồm tất cả dữ liệu)"""
+        return {
+            'profile_info': {
+                'name': self.name,
+                'description': self.description,
+                'created_date': self.created_date,
+                'ten_cong_ty': self.ten_cong_ty,
+                'dia_chi': self.dia_chi,
+                'mst': self.mst,
+                'dien_thoai': self.dien_thoai,
+                'fax': self.fax,
+                'email': self.email,
+                'tai_khoan_ngan_hang': self.tai_khoan_ngan_hang,
+                'tai_ngan_hang': self.tai_ngan_hang,
+                'loai_hinh_san_xuat': self.loai_hinh_san_xuat,
+                'version': '2.0'
+            },
+            'records': [record.to_dict() for record in self.records]
+        }
+
+    def from_json_dict(self, data):
+        """Nạp dữ liệu từ JSON dictionary"""
+        # Nạp thông tin profile
+        profile_info = data.get('profile_info', {})
+        self.name = profile_info.get('name', '')
+        self.description = profile_info.get('description', '')
+        self.created_date = profile_info.get('created_date', '')
+
+        # Nạp thông tin công ty (tương thích với cả version cũ và mới)
+        self.ten_cong_ty = profile_info.get('ten_cong_ty', '')
+        self.dia_chi = profile_info.get('dia_chi', '')
+        self.mst = profile_info.get('mst', '')
+        self.dien_thoai = profile_info.get('dien_thoai', '')
+        self.fax = profile_info.get('fax', '')
+        self.email = profile_info.get('email', '')
+        self.tai_khoan_ngan_hang = profile_info.get('tai_khoan_ngan_hang', '')
+        self.tai_ngan_hang = profile_info.get('tai_ngan_hang', '')
+        self.loai_hinh_san_xuat = profile_info.get('loai_hinh_san_xuat', '')
+
+        # Xóa dữ liệu cũ
+        self.clear_all()
+
+        # Nạp các bản ghi
+        records_data = data.get('records', [])
+        for record_data in records_data:
+            record = EmissionRecord()
+            # Chuyển đổi key để phù hợp với from_dict
+            converted_data = {
+                'stt': record_data.get('STT', ''),
+                'ten_nguon_thai': record_data.get('Tên Nguồn thải', ''),
+                'luu_luong': record_data.get('Lưu lượng (Nm3/h)', 0),
+                'tong_thoi_gian': record_data.get('Tổng thời gian xả thải trong kỳ (Giờ)', 0),
+                'thong_tin_don_vi': record_data.get('Thông tin đơn vị Phân tích', ''),
+                'kp': record_data.get('Kp', 1.0),
+                'kv': record_data.get('Kv', 1.0),
+                'bui': record_data.get('Bụi (mg/Nm3)', 0),
+                'tieu_chuan_bui': record_data.get('Tiêu chuẩn Bụi', 0),
+                'nox': record_data.get('NOx (gồm NO2 và NO) (mg/Nm3)', 0),
+                'tieu_chuan_nox': record_data.get('Tiêu chuẩn NOx', 0),
+                'sox': record_data.get('SOx (mg/Nm3)', 0),
+                'tieu_chuan_sox': record_data.get('Tiêu chuẩn SOx', 0),
+                'co': record_data.get('CO (mg/Nm3)', 0),
+                'tieu_chuan_co': record_data.get('Tiêu chuẩn CO', 0)
+            }
+            record.from_dict(converted_data)
+            # Thêm trực tiếp vào records để giữ nguyên STT từ file
+            self.records.append(record)
 
 
 class EmissionDataManager:

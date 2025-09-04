@@ -18,7 +18,7 @@ class ExcelExporter:
         self.worksheet = self.workbook.active
         self.worksheet.title = "Dữ liệu Phát thải"
     
-    def export_data(self, records_data, filename=None, profile_name=None):
+    def export_data(self, records_data, filename=None, profile_name=None, profile_info=None):
         """
         Xuất dữ liệu ra file Excel với định dạng đẹp
         """
@@ -57,13 +57,34 @@ class ExcelExporter:
         self.worksheet['A1'] = title
         self.worksheet.merge_cells('A1:X1')  # Tăng từ V1 lên X1 vì thêm 2 cột Kp, Kv
 
+        # Thêm thông tin công ty nếu có
+        current_row = 2
+        if profile_info:
+            if profile_info.get('ten_cong_ty'):
+                self.worksheet[f'A{current_row}'] = f'Công ty: {profile_info["ten_cong_ty"]}'
+                self.worksheet.merge_cells(f'A{current_row}:X{current_row}')
+                current_row += 1
+
+            if profile_info.get('dia_chi'):
+                self.worksheet[f'A{current_row}'] = f'Địa chỉ: {profile_info["dia_chi"]}'
+                self.worksheet.merge_cells(f'A{current_row}:X{current_row}')
+                current_row += 1
+
+            if profile_info.get('mst'):
+                self.worksheet[f'A{current_row}'] = f'MST: {profile_info["mst"]}'
+                self.worksheet.merge_cells(f'A{current_row}:X{current_row}')
+                current_row += 1
+
         # Thêm thông tin ngày tạo
-        self.worksheet['A2'] = f'Ngày tạo: {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}'
-        self.worksheet.merge_cells('A2:X2')  # Tăng từ V2 lên X2
+        self.worksheet[f'A{current_row}'] = f'Ngày tạo: {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}'
+        self.worksheet.merge_cells(f'A{current_row}:X{current_row}')
+        current_row += 1
         
-        # Thêm dữ liệu từ hàng 4
-        for r in dataframe_to_rows(df, index=False, header=True):
-            self.worksheet.append(r)
+        # Thêm dữ liệu
+        start_row = current_row + 1
+        for r_idx, r in enumerate(dataframe_to_rows(df, index=False, header=True)):
+            for c_idx, value in enumerate(r):
+                self.worksheet.cell(row=start_row + r_idx, column=c_idx + 1, value=value)
         
         # Định dạng tiêu đề chính
         title_cell = self.worksheet['A1']
@@ -78,7 +99,7 @@ class ExcelExporter:
         date_cell.alignment = Alignment(horizontal='center')
         
         # Định dạng header
-        header_row = 4
+        header_row = start_row
         for col in range(1, len(column_order) + 1):
             cell = self.worksheet.cell(row=header_row, column=col)
             cell.font = Font(bold=True, color='FFFFFF')
@@ -150,7 +171,7 @@ class WordExporter:
     def __init__(self):
         self.document = Document()
     
-    def export_data(self, records_data, filename=None, profile_name=None):
+    def export_data(self, records_data, filename=None, profile_name=None, profile_info=None):
         """
         Xuất dữ liệu ra file Word với template
         """
@@ -170,6 +191,23 @@ class WordExporter:
             title_text += f' - {profile_name.upper()}'
         title = self.document.add_heading(title_text, 0)
         title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        # Thêm thông tin công ty nếu có
+        if profile_info:
+            if profile_info.get('ten_cong_ty'):
+                company_para = self.document.add_paragraph()
+                company_para.add_run(f'Công ty: {profile_info["ten_cong_ty"]}').bold = True
+                company_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            if profile_info.get('dia_chi'):
+                address_para = self.document.add_paragraph()
+                address_para.add_run(f'Địa chỉ: {profile_info["dia_chi"]}')
+                address_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            if profile_info.get('mst'):
+                mst_para = self.document.add_paragraph()
+                mst_para.add_run(f'MST: {profile_info["mst"]}')
+                mst_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
         
         # Thêm thông tin ngày tạo
         date_para = self.document.add_paragraph(f'Ngày tạo: {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}')

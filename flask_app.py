@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, send_file
 import os
-from models import EmissionRecord, EmissionDataManager
+import json
+from datetime import datetime
+from models import EmissionRecord, EmissionDataManager, Profile
 from export_utils import ExcelExporter, WordExporter
 
 app = Flask(__name__)
@@ -227,15 +229,51 @@ def create_profile():
     """Tạo profile mới"""
     if request.method == 'POST':
         try:
+            # Lấy thông tin cơ bản
             name = request.form.get('name', '').strip()
             description = request.form.get('description', '').strip()
 
+            # Lấy thông tin công ty
+            ten_cong_ty = request.form.get('ten_cong_ty', '').strip()
+            dia_chi = request.form.get('dia_chi', '').strip()
+            mst = request.form.get('mst', '').strip()
+            dien_thoai = request.form.get('dien_thoai', '').strip()
+            fax = request.form.get('fax', '').strip()
+            email = request.form.get('email', '').strip()
+            tai_khoan_ngan_hang = request.form.get('tai_khoan_ngan_hang', '').strip()
+            tai_ngan_hang = request.form.get('tai_ngan_hang', '').strip()
+            loai_hinh_san_xuat = request.form.get('loai_hinh_san_xuat', '').strip()
+
+            # Validation các trường bắt buộc
             if not name:
                 flash('Tên profile không được để trống!', 'error')
                 return render_template('create_profile.html')
 
+            if not ten_cong_ty:
+                flash('Tên công ty không được để trống!', 'error')
+                return render_template('create_profile.html')
+
+            if not dia_chi:
+                flash('Địa chỉ không được để trống!', 'error')
+                return render_template('create_profile.html')
+
+            if not mst:
+                flash('Mã số thuế không được để trống!', 'error')
+                return render_template('create_profile.html')
+
             # Tạo profile mới
             profile = data_manager.create_profile(name, description)
+
+            # Gán thông tin công ty
+            profile.ten_cong_ty = ten_cong_ty
+            profile.dia_chi = dia_chi
+            profile.mst = mst
+            profile.dien_thoai = dien_thoai
+            profile.fax = fax
+            profile.email = email
+            profile.tai_khoan_ngan_hang = tai_khoan_ngan_hang
+            profile.tai_ngan_hang = tai_ngan_hang
+            profile.loai_hinh_san_xuat = loai_hinh_san_xuat
 
             # Đặt làm profile hiện tại
             profile_index = len(data_manager.profiles) - 1
@@ -302,8 +340,18 @@ def export_excel():
             flash('Không có dữ liệu để xuất!', 'error')
             return redirect(url_for('index'))
 
+        # Chuẩn bị thông tin profile
+        profile_info = {
+            'ten_cong_ty': current_profile.ten_cong_ty,
+            'dia_chi': current_profile.dia_chi,
+            'mst': current_profile.mst,
+            'dien_thoai': current_profile.dien_thoai,
+            'fax': current_profile.fax,
+            'email': current_profile.email
+        }
+
         exporter = ExcelExporter()
-        filepath = exporter.export_data(records, profile_name=current_profile.name)
+        filepath = exporter.export_data(records, profile_name=current_profile.name, profile_info=profile_info)
 
         return send_file(filepath, as_attachment=True, download_name=os.path.basename(filepath))
 
@@ -325,14 +373,99 @@ def export_word():
             flash('Không có dữ liệu để xuất!', 'error')
             return redirect(url_for('index'))
 
+        # Chuẩn bị thông tin profile
+        profile_info = {
+            'ten_cong_ty': current_profile.ten_cong_ty,
+            'dia_chi': current_profile.dia_chi,
+            'mst': current_profile.mst,
+            'dien_thoai': current_profile.dien_thoai,
+            'fax': current_profile.fax,
+            'email': current_profile.email
+        }
+
         exporter = WordExporter()
-        filepath = exporter.export_data(records, profile_name=current_profile.name)
+        filepath = exporter.export_data(records, profile_name=current_profile.name, profile_info=profile_info)
 
         return send_file(filepath, as_attachment=True, download_name=os.path.basename(filepath))
 
     except Exception as e:
         flash(f'Có lỗi xảy ra khi xuất Word: {str(e)}', 'error')
         return redirect(url_for('index'))
+
+@app.route('/export_json')
+def export_json():
+    """Xuất dữ liệu ra file JSON để backup"""
+    try:
+        current_profile = data_manager.get_current_profile()
+        if not current_profile:
+            flash('Không có profile nào được chọn!', 'error')
+            return redirect(url_for('index'))
+
+        # Tạo dữ liệu JSON
+        json_data = current_profile.to_json_dict()
+
+        # Tạo tên file
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        clean_profile_name = "".join(c for c in current_profile.name if c.isalnum() or c in (' ', '-', '_')).rstrip()
+        clean_profile_name = clean_profile_name.replace(' ', '_')
+        filename = f"Backup_{clean_profile_name}_{timestamp}.json"
+
+        # Lưu file
+        filepath = os.path.join('uploads', filename)
+        os.makedirs('uploads', exist_ok=True)
+
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(json_data, f, ensure_ascii=False, indent=2)
+
+        return send_file(filepath, as_attachment=True, download_name=filename)
+
+    except Exception as e:
+        flash(f'Có lỗi xảy ra khi xuất JSON: {str(e)}', 'error')
+        return redirect(url_for('index'))
+
+@app.route('/import_json', methods=['GET', 'POST'])
+def import_json():
+    """Nhập dữ liệu từ file JSON"""
+    if request.method == 'POST':
+        try:
+            # Kiểm tra file upload
+            if 'json_file' not in request.files:
+                flash('Vui lòng chọn file JSON!', 'error')
+                return redirect(url_for('import_json'))
+
+            file = request.files['json_file']
+            if file.filename == '':
+                flash('Vui lòng chọn file JSON!', 'error')
+                return redirect(url_for('import_json'))
+
+            if not file.filename.lower().endswith('.json'):
+                flash('Vui lòng chọn file có định dạng .json!', 'error')
+                return redirect(url_for('import_json'))
+
+            # Đọc và parse JSON
+            json_content = file.read().decode('utf-8')
+            data = json.loads(json_content)
+
+            # Tạo profile mới từ dữ liệu JSON
+            profile = Profile()
+            profile.from_json_dict(data)
+
+            # Thêm vào data manager
+            data_manager.profiles.append(profile)
+
+            # Đặt làm profile hiện tại
+            profile_index = len(data_manager.profiles) - 1
+            data_manager.set_current_profile(profile_index)
+
+            flash(f'Đã nhập thành công profile "{profile.name}" với {len(profile.records)} nguồn thải!', 'success')
+            return redirect(url_for('index'))
+
+        except json.JSONDecodeError:
+            flash('File JSON không hợp lệ!', 'error')
+        except Exception as e:
+            flash(f'Có lỗi xảy ra khi nhập JSON: {str(e)}', 'error')
+
+    return render_template('import_json.html')
 
 if __name__ == '__main__':
     # Tạo thư mục uploads nếu chưa có
