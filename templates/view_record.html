@@ -3,8 +3,8 @@
 {% block title %}Chi tiết bản ghi - Hệ thống Tính toán Phát thải{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-10">
+<div class="row">
+    <div class="col-12">
         <div class="card">
             <div class="card-header bg-info text-white">
                 <h4 class="mb-0"><i class="fas fa-eye"></i> Chi tiết Bản ghi Phát thải</h4>
@@ -12,7 +12,7 @@
             <div class="card-body">
                 <div class="row">
                     <!-- Thông tin cơ bản -->
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <h6 class="text-primary mb-3"><i class="fas fa-info-circle"></i> Thông tin cơ bản</h6>
                         
                         <table class="table table-borderless">
@@ -36,33 +36,61 @@
                                 <td class="fw-bold">Đơn vị phân tích:</td>
                                 <td>{{ record['Thông tin đơn vị Phân tích'] or 'Không có thông tin' }}</td>
                             </tr>
+                            <tr>
+                                <td class="fw-bold">Hệ số Kp:</td>
+                                <td>{{ "{:,.2f}".format(record['Kp']) }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Hệ số Kv:</td>
+                                <td>{{ "{:,.2f}".format(record['Kv']) }}</td>
+                            </tr>
                         </table>
                     </div>
-                    
-                    <!-- Thông số phát thải -->
-                    <div class="col-md-6">
-                        <h6 class="text-primary mb-3"><i class="fas fa-flask"></i> Thông số phát thải</h6>
-                        
+
+                    <!-- Nồng độ thực tế -->
+                    <div class="col-md-4">
+                        <h6 class="text-primary mb-3"><i class="fas fa-flask"></i> Nồng độ thực tế</h6>
+
                         <table class="table table-borderless">
                             <tr>
                                 <td class="fw-bold">Bụi:</td>
                                 <td>{{ "{:,.2f}".format(record['Bụi (mg/Nm3)']) }} mg/Nm³</td>
-                                <td class="text-muted">(TC: {{ "{:,.2f}".format(record['Tiêu chuẩn Bụi']) }})</td>
                             </tr>
                             <tr>
                                 <td class="fw-bold">NOx:</td>
                                 <td>{{ "{:,.2f}".format(record['NOx (gồm NO2 và NO) (mg/Nm3)']) }} mg/Nm³</td>
-                                <td class="text-muted">(TC: {{ "{:,.2f}".format(record['Tiêu chuẩn NOx']) }})</td>
                             </tr>
                             <tr>
                                 <td class="fw-bold">SOx:</td>
                                 <td>{{ "{:,.2f}".format(record['SOx (mg/Nm3)']) }} mg/Nm³</td>
-                                <td class="text-muted">(TC: {{ "{:,.2f}".format(record['Tiêu chuẩn SOx']) }})</td>
                             </tr>
                             <tr>
                                 <td class="fw-bold">CO:</td>
                                 <td>{{ "{:,.2f}".format(record['CO (mg/Nm3)']) }} mg/Nm³</td>
-                                <td class="text-muted">(TC: {{ "{:,.2f}".format(record['Tiêu chuẩn CO']) }})</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Tiêu chuẩn -->
+                    <div class="col-md-4">
+                        <h6 class="text-primary mb-3"><i class="fas fa-ruler"></i> Tiêu chuẩn</h6>
+
+                        <table class="table table-borderless">
+                            <tr>
+                                <td class="fw-bold">Tiêu chuẩn Bụi:</td>
+                                <td>{{ "{:,.2f}".format(record['Tiêu chuẩn Bụi']) }} mg/Nm³</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Tiêu chuẩn NOx:</td>
+                                <td>{{ "{:,.2f}".format(record['Tiêu chuẩn NOx']) }} mg/Nm³</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Tiêu chuẩn SOx:</td>
+                                <td>{{ "{:,.2f}".format(record['Tiêu chuẩn SOx']) }} mg/Nm³</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Tiêu chuẩn CO:</td>
+                                <td>{{ "{:,.2f}".format(record['Tiêu chuẩn CO']) }} mg/Nm³</td>
                             </tr>
                         </table>
                     </div>
@@ -139,8 +167,9 @@
                                     <div class="col-md-6">
                                         <h6>Mức thu phí biến đổi:</h6>
                                         <p class="small text-muted">
-                                            Nếu (Tiêu chuẩn - Thực tế)/Tiêu chuẩn × 100 ≥ 0.3 → 0.5<br>
-                                            Ngược lại < 0.3 → 0.75
+                                            ty_le = ((Tiêu chuẩn × Kp × Kv) - Thực tế) / (Tiêu chuẩn × Kp × Kv) × 100<br>
+                                            Nếu ty_le ≥ 30 → 0.5<br>
+                                            Ngược lại < 30 → 0.75
                                         </p>
                                         
                                         <h6>Hệ số phí:</h6>
@@ -169,7 +198,13 @@
                         <i class="fas fa-arrow-left"></i> Quay lại danh sách
                     </a>
                     <div>
-                        <a href="{{ url_for('delete_record', index=index) }}" 
+                        <a href="{{ url_for('edit_record', index=index) }}" class="btn btn-warning me-2">
+                            <i class="fas fa-edit"></i> Chỉnh sửa
+                        </a>
+                        <a href="{{ url_for('duplicate_record', index=index) }}" class="btn btn-success me-2">
+                            <i class="fas fa-copy"></i> Nhân bản
+                        </a>
+                        <a href="{{ url_for('delete_record', index=index) }}"
                            class="btn btn-danger"
                            onclick="return confirm('Bạn có chắc chắn muốn xóa bản ghi này?')">
                             <i class="fas fa-trash"></i> Xóa bản ghi

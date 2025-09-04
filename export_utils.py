@@ -18,24 +18,31 @@ class ExcelExporter:
         self.worksheet = self.workbook.active
         self.worksheet.title = "Dữ liệu Phát thải"
     
-    def export_data(self, records_data, filename=None):
+    def export_data(self, records_data, filename=None, profile_name=None):
         """
         Xuất dữ liệu ra file Excel với định dạng đẹp
         """
         if not filename:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"du_lieu_phat_thai_{timestamp}.xlsx"
+            if profile_name:
+                # Làm sạch tên profile để sử dụng trong tên file
+                clean_profile_name = "".join(c for c in profile_name if c.isalnum() or c in (' ', '-', '_')).rstrip()
+                clean_profile_name = clean_profile_name.replace(' ', '_')
+                filename = f"{clean_profile_name}_{timestamp}.xlsx"
+            else:
+                filename = f"du_lieu_phat_thai_{timestamp}.xlsx"
         
         # Tạo DataFrame từ dữ liệu
         df = pd.DataFrame(records_data)
         
         # Định nghĩa thứ tự cột
         column_order = [
-            'STT', 'Tên Nguồn thải', 'Lưu lượng (Nm3/h)', 
+            'STT', 'Tên Nguồn thải', 'Lưu lượng (Nm3/h)',
             'Tổng thời gian xả thải trong kỳ (Giờ)', 'Thông tin đơn vị Phân tích',
+            'Kp', 'Kv',
             'Bụi (mg/Nm3)', 'Tiêu chuẩn Bụi', 'NOx (gồm NO2 và NO) (mg/Nm3)', 'Tiêu chuẩn NOx',
             'SOx (mg/Nm3)', 'Tiêu chuẩn SOx', 'CO (mg/Nm3)', 'Tiêu chuẩn CO',
-            'Mức thu phí biến đổi của Bụi', 'Mức thu phí biến đổi của Nox', 
+            'Mức thu phí biến đổi của Bụi', 'Mức thu phí biến đổi của Nox',
             'Mức thu phí biến đổi của Sox', 'Mức thu phí biến đổi của CO',
             'Ci (Bụi)', 'Ci (NOx)', 'Ci (SOx)', 'Ci (CO)', 'Ci'
         ]
@@ -44,12 +51,15 @@ class ExcelExporter:
         df = df.reindex(columns=column_order)
         
         # Thêm tiêu đề
-        self.worksheet['A1'] = 'BÁO CÁO DỮ LIỆU PHÁT THẢI VÀ TÍNH TOÁN PHÍ MÔI TRƯỜNG'
-        self.worksheet.merge_cells('A1:V1')
-        
+        title = 'BÁO CÁO DỮ LIỆU PHÁT THẢI VÀ TÍNH TOÁN PHÍ MÔI TRƯỜNG'
+        if profile_name:
+            title += f' - {profile_name.upper()}'
+        self.worksheet['A1'] = title
+        self.worksheet.merge_cells('A1:X1')  # Tăng từ V1 lên X1 vì thêm 2 cột Kp, Kv
+
         # Thêm thông tin ngày tạo
         self.worksheet['A2'] = f'Ngày tạo: {datetime.now().strftime("%d/%m/%Y %H:%M:%S")}'
-        self.worksheet.merge_cells('A2:V2')
+        self.worksheet.merge_cells('A2:X2')  # Tăng từ V2 lên X2
         
         # Thêm dữ liệu từ hàng 4
         for r in dataframe_to_rows(df, index=False, header=True):
@@ -140,16 +150,25 @@ class WordExporter:
     def __init__(self):
         self.document = Document()
     
-    def export_data(self, records_data, filename=None):
+    def export_data(self, records_data, filename=None, profile_name=None):
         """
         Xuất dữ liệu ra file Word với template
         """
         if not filename:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"bao_cao_phat_thai_{timestamp}.docx"
+            if profile_name:
+                # Làm sạch tên profile để sử dụng trong tên file
+                clean_profile_name = "".join(c for c in profile_name if c.isalnum() or c in (' ', '-', '_')).rstrip()
+                clean_profile_name = clean_profile_name.replace(' ', '_')
+                filename = f"BaoCao_{clean_profile_name}_{timestamp}.docx"
+            else:
+                filename = f"bao_cao_phat_thai_{timestamp}.docx"
         
         # Thêm tiêu đề
-        title = self.document.add_heading('BÁO CÁO DỮ LIỆU PHÁT THẢI VÀ TÍNH TOÁN PHÍ MÔI TRƯỜNG', 0)
+        title_text = 'BÁO CÁO DỮ LIỆU PHÁT THẢI VÀ TÍNH TOÁN PHÍ MÔI TRƯỜNG'
+        if profile_name:
+            title_text += f' - {profile_name.upper()}'
+        title = self.document.add_heading(title_text, 0)
         title.alignment = WD_ALIGN_PARAGRAPH.CENTER
         
         # Thêm thông tin ngày tạo

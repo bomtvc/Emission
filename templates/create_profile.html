@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Tạo Profile - Phần mềm Tính toán Phí Phát thải{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-folder-plus"></i> Tạo Profile Mới</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Tên Profile <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" required 
+                                       placeholder="Ví dụ: Nhà máy ABC - Quý 1/2024">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Mô tả</label>
+                                <input type="text" class="form-control" id="description" name="description" 
+                                       placeholder="Mô tả ngắn gọn về profile này">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Lưu ý:</strong> Profile là một nhóm nguồn thải. Mỗi profile có thể chứa nhiều nguồn thải và sẽ được xuất file riêng biệt.
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Tạo Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

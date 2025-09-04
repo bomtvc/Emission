@@ -3,11 +3,68 @@
 {% block title %}Trang chủ - Hệ thống Tính toán Phát thải{% endblock %}
 
 {% block content %}
+<!-- Profile Management Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-folder"></i> Quản lý Profile</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        {% if profiles %}
+                            <label for="profileSelect" class="form-label">Profile hiện tại:</label>
+                            <select class="form-select d-inline-block w-auto" id="profileSelect" onchange="switchProfile(this.value)">
+                                <option value="">-- Chọn Profile --</option>
+                                {% for profile in profiles %}
+                                <option value="{{ loop.index0 }}" {% if loop.index0 == current_profile_index %}selected{% endif %}>
+                                    {{ profile.name }} ({{ profile.to_dict()['record_count'] }} nguồn thải)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            <span class="text-muted">Chưa có profile nào</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <a href="{{ url_for('create_profile') }}" class="btn btn-success btn-sm">
+                            <i class="fas fa-folder-plus"></i> Tạo Profile Mới
+                        </a>
+                        {% if current_profile %}
+                        <a href="{{ url_for('delete_profile', index=current_profile_index) }}"
+                           class="btn btn-danger btn-sm"
+                           onclick="return confirm('Bạn có chắc chắn muốn xóa profile này và tất cả dữ liệu bên trong?')">
+                            <i class="fas fa-trash"></i> Xóa Profile
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if current_profile %}
+                <div class="alert alert-success">
+                    <strong>{{ current_profile.name }}</strong>
+                    {% if current_profile.description %} - {{ current_profile.description }}{% endif %}
+                    <br><small class="text-muted">Tạo lúc: {{ current_profile.created_date }}</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-12">
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="fas fa-list"></i> Danh sách Dữ liệu Phát thải</h4>
+                <h4 class="mb-0">
+                    <i class="fas fa-list"></i>
+                    {% if current_profile %}
+                        Danh sách Nguồn thải - {{ current_profile.name }}
+                    {% else %}
+                        Danh sách Dữ liệu Phát thải
+                    {% endif %}
+                </h4>
             </div>
             <div class="card-body">
                 {% if records %}
@@ -31,40 +88,54 @@
                         <table class="table table-striped table-hover">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>STT</th>
-                                    <th>Tên Nguồn thải</th>
-                                    <th>Lưu lượng (Nm³/h)</th>
-                                    <th>Thời gian (Giờ)</th>
-                                    <th>Bụi (mg/Nm³)</th>
-                                    <th>NOx (mg/Nm³)</th>
-                                    <th>SOx (mg/Nm³)</th>
-                                    <th>CO (mg/Nm³)</th>
-                                    <th>Ci (VNĐ)</th>
-                                    <th>Thao tác</th>
+                                    <th class="text-center">STT</th>
+                                    <th class="text-center">Tên Nguồn thải</th>
+                                    <th class="text-center">Lưu lượng<br>(Nm³/h)</th>
+                                    <th class="text-center">Thời gian<br>(Giờ)</th>
+                                    <th class="text-center">Kp</th>
+                                    <th class="text-center">Kv</th>
+                                    <th class="text-center">Bụi<br>(mg/Nm³)</th>
+                                    <th class="text-center">NOx<br>(mg/Nm³)</th>
+                                    <th class="text-center">SOx<br>(mg/Nm³)</th>
+                                    <th class="text-center">CO<br>(mg/Nm³)</th>
+                                    <th class="text-center">Ci<br>(VNĐ)</th>
+                                    <th class="text-center">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for record in records %}
                                 <tr>
-                                    <td>{{ record['STT'] }}</td>
+                                    <td class="text-center">{{ record['STT'] }}</td>
                                     <td>{{ record['Tên Nguồn thải'] }}</td>
-                                    <td>{{ "{:,.2f}".format(record['Lưu lượng (Nm3/h)']) }}</td>
-                                    <td>{{ "{:,.2f}".format(record['Tổng thời gian xả thải trong kỳ (Giờ)']) }}</td>
-                                    <td>{{ "{:,.2f}".format(record['Bụi (mg/Nm3)']) }}</td>
-                                    <td>{{ "{:,.2f}".format(record['NOx (gồm NO2 và NO) (mg/Nm3)']) }}</td>
-                                    <td>{{ "{:,.2f}".format(record['SOx (mg/Nm3)']) }}</td>
-                                    <td>{{ "{:,.2f}".format(record['CO (mg/Nm3)']) }}</td>
-                                    <td class="text-end">{{ "{:,.0f}".format(record['Ci']) }}</td>
-                                    <td>
-                                        <a href="{{ url_for('view_record', index=loop.index0) }}" 
-                                           class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ url_for('delete_record', index=loop.index0) }}" 
-                                           class="btn btn-sm btn-outline-danger" title="Xóa"
-                                           onclick="return confirm('Bạn có chắc chắn muốn xóa bản ghi này?')">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
+                                    <td class="text-center">{{ "{:,.2f}".format(record['Lưu lượng (Nm3/h)']) }}</td>
+                                    <td class="text-center">{{ "{:,.2f}".format(record['Tổng thời gian xả thải trong kỳ (Giờ)']) }}</td>
+                                    <td class="text-center">{{ "{:,.2f}".format(record['Kp']) }}</td>
+                                    <td class="text-center">{{ "{:,.2f}".format(record['Kv']) }}</td>
+                                    <td class="text-center">{{ "{:,.2f}".format(record['Bụi (mg/Nm3)']) }}</td>
+                                    <td class="text-center">{{ "{:,.2f}".format(record['NOx (gồm NO2 và NO) (mg/Nm3)']) }}</td>
+                                    <td class="text-center">{{ "{:,.2f}".format(record['SOx (mg/Nm3)']) }}</td>
+                                    <td class="text-center">{{ "{:,.2f}".format(record['CO (mg/Nm3)']) }}</td>
+                                    <td class="text-center">{{ "{:,.0f}".format(record['Ci']) }}</td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('view_record', index=loop.index0) }}"
+                                               class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ url_for('edit_record', index=loop.index0) }}"
+                                               class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{{ url_for('duplicate_record', index=loop.index0) }}"
+                                               class="btn btn-sm btn-outline-success" title="Nhân bản">
+                                                <i class="fas fa-copy"></i>
+                                            </a>
+                                            <a href="{{ url_for('delete_record', index=loop.index0) }}"
+                                               class="btn btn-sm btn-outline-danger" title="Xóa"
+                                               onclick="return confirm('Bạn có chắc chắn muốn xóa bản ghi này?')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -74,11 +145,19 @@
                 {% else %}
                     <div class="text-center py-5">
                         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">Chưa có dữ liệu nào</h5>
-                        <p class="text-muted">Hãy thêm dữ liệu phát thải đầu tiên của bạn</p>
-                        <a href="{{ url_for('add_record') }}" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Thêm dữ liệu mới
-                        </a>
+                        {% if not current_profile %}
+                            <h5 class="text-muted">Chưa có profile nào</h5>
+                            <p class="text-muted">Hãy tạo profile đầu tiên để bắt đầu</p>
+                            <a href="{{ url_for('create_profile') }}" class="btn btn-success">
+                                <i class="fas fa-folder-plus"></i> Tạo Profile Mới
+                            </a>
+                        {% else %}
+                            <h5 class="text-muted">Chưa có nguồn thải nào</h5>
+                            <p class="text-muted">Hãy thêm nguồn thải đầu tiên vào profile này</p>
+                            <a href="{{ url_for('add_record') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Thêm nguồn thải
+                            </a>
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>
@@ -127,4 +206,14 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function switchProfile(index) {
+    if (index !== "") {
+        window.location.href = "{{ url_for('switch_profile', index=0) }}".replace('0', index);
+    }
+}
+</script>
 {% endblock %}

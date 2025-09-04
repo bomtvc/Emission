@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Thêm dữ liệu - Hệ thống Tính toán Phát thải{% endblock %}
+{% block title %}Chỉnh sửa nguồn thải - Hệ thống Tính toán Phát thải{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="fas fa-plus"></i> Thêm Nguồn thải Mới</h4>
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="fas fa-edit"></i> Chỉnh sửa Nguồn thải</h4>
             </div>
             <div class="card-body">
                 <form method="POST" id="emissionForm">
@@ -16,40 +16,40 @@
                         <div class="col-md-4">
                             <h6 class="text-primary mb-3"><i class="fas fa-info-circle"></i> Thông tin cơ bản</h6>
                             
-                            <!-- STT được tự động đánh số, không cần hiển thị -->
-                            <input type="hidden" id="stt" name="stt" value="">
+                            <!-- STT không thể chỉnh sửa, ẩn đi -->
+                            <input type="hidden" id="stt" name="stt" value="{{ record['STT'] }}">
                             
                             <div class="mb-3">
                                 <label for="ten_nguon_thai" class="form-label">Tên Nguồn thải <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="ten_nguon_thai" name="ten_nguon_thai" required>
+                                <input type="text" class="form-control" id="ten_nguon_thai" name="ten_nguon_thai" value="{{ record['Tên Nguồn thải'] }}" required>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="luu_luong" class="form-label">Lưu lượng (Nm³/h) <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="luu_luong" name="luu_luong" required>
+                                <input type="number" step="0.01" class="form-control" id="luu_luong" name="luu_luong" value="{{ record['Lưu lượng (Nm3/h)'] }}" required>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="tong_thoi_gian" class="form-label">Tổng thời gian xả thải trong kỳ (Giờ) <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="tong_thoi_gian" name="tong_thoi_gian" required>
+                                <input type="number" step="0.01" class="form-control" id="tong_thoi_gian" name="tong_thoi_gian" value="{{ record['Tổng thời gian xả thải trong kỳ (Giờ)'] }}" required>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="thong_tin_don_vi" class="form-label">Thông tin đơn vị Phân tích</label>
-                                <textarea class="form-control" id="thong_tin_don_vi" name="thong_tin_don_vi" rows="3"></textarea>
+                                <input type="text" class="form-control" id="thong_tin_don_vi" name="thong_tin_don_vi" value="{{ record['Thông tin đơn vị Phân tích'] }}">
                             </div>
-
+                            
                             <div class="row">
                                 <div class="col-6">
                                     <div class="mb-3">
                                         <label for="kp" class="form-label">Hệ số Kp <span class="text-danger">*</span></label>
-                                        <input type="number" step="0.1" class="form-control" id="kp" name="kp" value="1.0" required>
+                                        <input type="number" step="0.01" class="form-control" id="kp" name="kp" value="{{ record['Kp'] }}" required>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="mb-3">
                                         <label for="kv" class="form-label">Hệ số Kv <span class="text-danger">*</span></label>
-                                        <input type="number" step="0.1" class="form-control" id="kv" name="kv" value="1.0" required>
+                                        <input type="number" step="0.01" class="form-control" id="kv" name="kv" value="{{ record['Kv'] }}" required>
                                     </div>
                                 </div>
                             </div>
@@ -61,22 +61,22 @@
 
                             <div class="mb-3">
                                 <label for="bui" class="form-label">Bụi <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="bui" name="bui" required>
+                                <input type="number" step="0.01" class="form-control" id="bui" name="bui" value="{{ record['Bụi (mg/Nm3)'] }}" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="nox" class="form-label">NOx <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="nox" name="nox" required>
+                                <input type="number" step="0.01" class="form-control" id="nox" name="nox" value="{{ record['NOx (gồm NO2 và NO) (mg/Nm3)'] }}" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="sox" class="form-label">SOx <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="sox" name="sox" required>
+                                <input type="number" step="0.01" class="form-control" id="sox" name="sox" value="{{ record['SOx (mg/Nm3)'] }}" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="co" class="form-label">CO <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="co" name="co" required>
+                                <input type="number" step="0.01" class="form-control" id="co" name="co" value="{{ record['CO (mg/Nm3)'] }}" required>
                             </div>
                         </div>
 
@@ -86,22 +86,22 @@
 
                             <div class="mb-3">
                                 <label for="tieu_chuan_bui" class="form-label">Tiêu chuẩn Bụi <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="tieu_chuan_bui" name="tieu_chuan_bui" required>
+                                <input type="number" step="0.01" class="form-control" id="tieu_chuan_bui" name="tieu_chuan_bui" value="{{ record['Tiêu chuẩn Bụi'] }}" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="tieu_chuan_nox" class="form-label">Tiêu chuẩn NOx <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="tieu_chuan_nox" name="tieu_chuan_nox" required>
+                                <input type="number" step="0.01" class="form-control" id="tieu_chuan_nox" name="tieu_chuan_nox" value="{{ record['Tiêu chuẩn NOx'] }}" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="tieu_chuan_sox" class="form-label">Tiêu chuẩn SOx <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="tieu_chuan_sox" name="tieu_chuan_sox" required>
+                                <input type="number" step="0.01" class="form-control" id="tieu_chuan_sox" name="tieu_chuan_sox" value="{{ record['Tiêu chuẩn SOx'] }}" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="tieu_chuan_co" class="form-label">Tiêu chuẩn CO <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="tieu_chuan_co" name="tieu_chuan_co" required>
+                                <input type="number" step="0.01" class="form-control" id="tieu_chuan_co" name="tieu_chuan_co" value="{{ record['Tiêu chuẩn CO'] }}" required>
                             </div>
                         </div>
                     </div>
@@ -116,8 +116,8 @@
                             <button type="button" class="btn btn-info me-2" onclick="previewCalculation()">
                                 <i class="fas fa-calculator"></i> Xem trước tính toán
                             </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Thêm nguồn thải
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> Cập nhật nguồn thải
                             </button>
                         </div>
                     </div>
