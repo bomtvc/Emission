@@ -18,7 +18,7 @@ class ExcelExporter:
         self.worksheet = self.workbook.active
         self.worksheet.title = "Dữ liệu Phát thải"
     
-    def export_data(self, records_data, filename=None, profile_name=None, profile_info=None):
+    def export_data(self, records_data, filename=None, profile_name=None, profile_info=None, output_path=None):
         """
         Xuất dữ liệu ra file Excel với định dạng đẹp
         """
@@ -158,10 +158,14 @@ class ExcelExporter:
             self.worksheet.column_dimensions[column_letter].width = adjusted_width
         
         # Lưu file
-        filepath = os.path.join('uploads', filename)
-        os.makedirs('uploads', exist_ok=True)
+        if output_path:
+            filepath = output_path
+        else:
+            filepath = os.path.join('uploads', filename)
+            os.makedirs('uploads', exist_ok=True)
+
         self.workbook.save(filepath)
-        
+
         return filepath
 
 
@@ -171,7 +175,7 @@ class WordExporter:
     def __init__(self):
         self.document = Document()
     
-    def export_data(self, records_data, filename=None, profile_name=None, profile_info=None):
+    def export_data(self, records_data, filename=None, profile_name=None, profile_info=None, output_path=None):
         """
         Xuất dữ liệu ra file Word với template
         """
@@ -289,8 +293,12 @@ class WordExporter:
         formula_para.add_run('Tổng Ci = Ci(Bụi) + Ci(NOx) + Ci(SOx) + Ci(CO)').bold = True
         
         # Lưu file
-        filepath = os.path.join('uploads', filename)
-        os.makedirs('uploads', exist_ok=True)
+        if output_path:
+            filepath = output_path
+        else:
+            filepath = os.path.join('uploads', filename)
+            os.makedirs('uploads', exist_ok=True)
+
         self.document.save(filepath)
-        
+
         return filepath

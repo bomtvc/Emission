@@ -18,8 +18,8 @@
                             <select class="form-select d-inline-block w-auto" id="profileSelect" onchange="switchProfile(this.value)">
                                 <option value="">-- Chọn Profile --</option>
                                 {% for profile in profiles %}
-                                <option value="{{ loop.index0 }}" {% if loop.index0 == current_profile_index %}selected{% endif %}>
-                                    {{ profile.name }} ({{ profile.to_dict()['record_count'] }} nguồn thải)
+                                <option value="{{ profile.id }}" {% if current_profile and profile.id == current_profile.id %}selected{% endif %}>
+                                    {{ profile.name }} ({{ profile.records|length }} nguồn thải)
                                 </option>
                                 {% endfor %}
                             </select>
@@ -32,7 +32,7 @@
                             <i class="fas fa-folder-plus"></i> Tạo Profile Mới
                         </a>
                         {% if current_profile %}
-                        <a href="{{ url_for('export_json') }}" class="btn btn-warning btn-sm">
+                        <a href="{{ url_for('export_json', profile_id=current_profile.id) }}" class="btn btn-warning btn-sm">
                             <i class="fas fa-file-code"></i> Xuất JSON
                         </a>
                         {% endif %}
@@ -40,7 +40,7 @@
                             <i class="fas fa-file-import"></i> Nhập JSON
                         </a>
                         {% if current_profile %}
-                        <a href="{{ url_for('delete_profile', index=current_profile_index) }}"
+                        <a href="{{ url_for('delete_profile', profile_id=current_profile.id) }}"
                            class="btn btn-danger btn-sm"
                            onclick="return confirm('Bạn có chắc chắn muốn xóa profile này và tất cả dữ liệu bên trong?')">
                             <i class="fas fa-trash"></i> Xóa Profile
@@ -90,13 +90,13 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span class="text-muted">Tổng số bản ghi: {{ records|length }}</span>
                         <div>
-                            <a href="{{ url_for('export_excel') }}" class="btn btn-success btn-sm">
+                            <a href="{{ url_for('export_excel', profile_id=current_profile.id) }}" class="btn btn-success btn-sm">
                                 <i class="fas fa-file-excel"></i> Xuất Excel
                             </a>
-                            <a href="{{ url_for('export_word') }}" class="btn btn-info btn-sm">
+                            <a href="{{ url_for('export_word', profile_id=current_profile.id) }}" class="btn btn-info btn-sm">
                                 <i class="fas fa-file-word"></i> Xuất Word
                             </a>
-                            <a href="{{ url_for('clear_all') }}" class="btn btn-danger btn-sm"
+                            <a href="{{ url_for('clear_all', profile_id=current_profile.id) }}" class="btn btn-danger btn-sm"
                                onclick="return confirm('Bạn có chắc chắn muốn xóa tất cả dữ liệu?')">
                                 <i class="fas fa-trash"></i> Xóa tất cả
                             </a>
@@ -137,19 +137,19 @@
                                     <td class="text-center">{{ "{:,.0f}".format(record['Ci']) }}</td>
                                     <td class="text-center">
                                         <div class="btn-group" role="group">
-                                            <a href="{{ url_for('view_record', index=loop.index0) }}"
+                                            <a href="{{ url_for('view_record', record_id=record['id']) }}"
                                                class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="{{ url_for('edit_record', index=loop.index0) }}"
+                                            <a href="{{ url_for('edit_record', record_id=record['id']) }}"
                                                class="btn btn-sm btn-outline-warning" title="Chỉnh sửa">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a href="{{ url_for('duplicate_record', index=loop.index0) }}"
+                                            <a href="{{ url_for('duplicate_record', record_id=record['id']) }}"
                                                class="btn btn-sm btn-outline-success" title="Nhân bản">
                                                 <i class="fas fa-copy"></i>
                                             </a>
-                                            <a href="{{ url_for('delete_record', index=loop.index0) }}"
+                                            <a href="{{ url_for('delete_record', record_id=record['id']) }}"
                                                class="btn btn-sm btn-outline-danger" title="Xóa"
                                                onclick="return confirm('Bạn có chắc chắn muốn xóa bản ghi này?')">
                                                 <i class="fas fa-trash"></i>
@@ -165,7 +165,7 @@
                     <!-- Button thêm nguồn thải ở phía dưới bên phải -->
                     {% if current_profile %}
                     <div class="d-flex justify-content-end mt-3">
-                        <a href="{{ url_for('add_record') }}" class="btn btn-primary">
+                        <a href="{{ url_for('add_record', profile_id=current_profile.id) }}" class="btn btn-primary">
                             <i class="fas fa-plus"></i> Thêm nguồn thải
                         </a>
                     </div>
@@ -182,7 +182,7 @@
                         {% else %}
                             <h5 class="text-muted">Chưa có nguồn thải nào</h5>
                             <p class="text-muted">Hãy thêm nguồn thải đầu tiên vào profile này</p>
-                            <a href="{{ url_for('add_record') }}" class="btn btn-primary">
+                            <a href="{{ url_for('add_record', profile_id=current_profile.id) }}" class="btn btn-primary">
                                 <i class="fas fa-plus"></i> Thêm nguồn thải
                             </a>
                         {% endif %}
@@ -238,9 +238,9 @@
 
 {% block scripts %}
 <script>
-function switchProfile(index) {
-    if (index !== "") {
-        window.location.href = "{{ url_for('switch_profile', index=0) }}".replace('0', index);
+function switchProfile(profileId) {
+    if (profileId !== "") {
+        window.location.href = "{{ url_for('index') }}?profile_id=" + profileId;
     }
 }
 </script>
