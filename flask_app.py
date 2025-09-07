@@ -190,23 +190,64 @@ def reset_user_password(user_id):
 def delete_user(user_id):
     """Xóa user"""
     user = User.query.get_or_404(user_id)
-    
+
     # Không cho phép xóa admin
     if user.is_admin:
         flash('Không thể xóa tài khoản Admin!', 'error')
         return redirect(url_for('manage_users'))
-    
+
     # Không cho phép admin tự xóa chính mình
     if user.id == current_user.id:
         flash('Bạn không thể xóa chính mình!', 'error')
         return redirect(url_for('manage_users'))
-    
+
     username = user.username
     db.session.delete(user)
     db.session.commit()
-    
+
     flash(f'Đã xóa tài khoản {username}!', 'success')
     return redirect(url_for('manage_users'))
+
+@app.route('/view_user_profiles/<int:user_id>')
+@admin_required
+def view_user_profiles(user_id):
+    """Admin xem profile của user (trong trang quản lý user)"""
+    user = User.query.get_or_404(user_id)
+    profiles = Profile.query.filter_by(user_id=user_id).all()
+
+    return render_template('view_user_profiles.html', user=user, profiles=profiles)
+
+@app.route('/view_user_profile_detail/<int:profile_id>')
+@admin_required
+def view_user_profile_detail(profile_id):
+    """Admin xem chi tiết profile của user"""
+    profile = Profile.query.get_or_404(profile_id)
+
+    # Chuẩn bị dữ liệu records với ID
+    records_data = []
+    for record in profile.records:
+        record_dict = record.to_dict()
+        record_dict['id'] = record.id
+        records_data.append(record_dict)
+
+    total_ci = sum(record['Ci'] for record in records_data)
+
+    return render_template('view_user_profile_detail.html',
+                         profile=profile,
+                         records=records_data,
+                         total_ci=total_ci)
+
+@app.route('/view_user_record/<int:record_id>')
+@admin_required
+def view_user_record(record_id):
+    """Admin xem chi tiết record của user"""
+    record = EmissionRecord.query.get_or_404(record_id)
+    record_data = record.to_dict()
+
+    return render_template('view_user_record.html',
+                         record=record_data,
+                         record_id=record_id,
+                         profile=record.profile)
 
 # Route chính
 @app.route('/')

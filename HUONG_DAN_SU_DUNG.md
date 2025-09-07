@@ -30,7 +30,8 @@ python flask_app.py
 ### Admin:
 - Có quyền cao nhất trong hệ thống
 - Quản lý tất cả user: tạo, kích hoạt/khóa, reset password, xóa user
-- Xem và quản lý tất cả profile của mọi user
+- **Xem profile của user khác thông qua trang "Quản lý User"** (chỉ xem, không chỉnh sửa)
+- Tạo và quản lý profile riêng của mình như user thường
 - Đổi password của chính mình
 
 ### User thường:
@@ -49,10 +50,12 @@ python flask_app.py
    - **Kích hoạt/Khóa user**: Click nút "Mở khóa"/"Khóa"
    - **Reset password**: Click "Reset PW", nhập password mới
    - **Xóa user**: Click "Xóa" (chỉ với user thường)
+   - **Xem profile của user**: Click vào số profile để xem chi tiết
 
-### Quản lý Profile:
-- Admin có thể xem và chỉnh sửa tất cả profile của mọi user
-- Có thể tạo profile mới cho chính mình
+### Quản lý Profile riêng:
+- Admin tạo và quản lý profile riêng của mình như user thường
+- Profile của admin hoàn toàn riêng biệt với profile của user khác
+- Admin chỉ có thể **xem** (không chỉnh sửa) profile của user khác thông qua trang "Quản lý User"
 
 ## 4. HƯỚNG DẪN SỬ DỤNG CHO USER
 

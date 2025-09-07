@@ -21,7 +21,7 @@
                             <th>Loại tài khoản</th>
                             <th>Trạng thái</th>
                             <th>Ngày tạo</th>
-                            <th>Số Profile</th>
+                            <th>Profile</th>
                             <th>Thao tác</th>
                         </tr>
                     </thead>
@@ -46,31 +46,38 @@
                                 {% endif %}
                             </td>
                             <td>{{ user.created_at.strftime('%d/%m/%Y %H:%M') if user.created_at else 'N/A' }}</td>
-                            <td>{{ user.profile_count }}</td>
+                            <td>
+                                <a href="{{ url_for('view_user_profiles', user_id=user.id) }}"
+                                   class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center"
+                                   title="Xem {{ user.profile_count }} profile của user này">
+                                    <i class="fas fa-folder-open me-1"></i>
+                                    <span class="badge bg-primary">{{ user.profile_count }}</span>
+                                </a>
+                            </td>
                             <td>
                                 {% if not user.is_admin or user.id != current_user.id %}
                                 <div class="btn-group" role="group">
                                     {% if user.is_active %}
-                                        <a href="{{ url_for('toggle_user_status', user_id=user.id) }}" 
+                                        <a href="{{ url_for('toggle_user_status', user_id=user.id) }}"
                                            class="btn btn-sm btn-warning"
                                            onclick="return confirm('Bạn có chắc muốn khóa user này?')">
                                             Khóa
                                         </a>
                                     {% else %}
-                                        <a href="{{ url_for('toggle_user_status', user_id=user.id) }}" 
+                                        <a href="{{ url_for('toggle_user_status', user_id=user.id) }}"
                                            class="btn btn-sm btn-success">
                                             Mở khóa
                                         </a>
                                     {% endif %}
-                                    
-                                    <button type="button" class="btn btn-sm btn-info" 
-                                            data-bs-toggle="modal" 
+
+                                    <button type="button" class="btn btn-sm btn-info"
+                                            data-bs-toggle="modal"
                                             data-bs-target="#resetPasswordModal{{ user.id }}">
                                         Reset PW
                                     </button>
-                                    
+
                                     {% if not user.is_admin %}
-                                    <a href="{{ url_for('delete_user', user_id=user.id) }}" 
+                                    <a href="{{ url_for('delete_user', user_id=user.id) }}"
                                        class="btn btn-sm btn-danger"
                                        onclick="return confirm('Bạn có chắc muốn xóa user này? Tất cả dữ liệu sẽ bị mất!')">
                                         Xóa

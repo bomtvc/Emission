@@ -32,24 +32,33 @@ def login_required_custom(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def check_profile_ownership(profile_id):
+def check_profile_ownership(profile_id, allow_admin_all=False):
     """Kiểm tra quyền sở hữu profile"""
     from database import Profile
-    
-    if current_user.is_admin:
-        return True  # Admin có thể truy cập tất cả profile
-    
+
     profile = Profile.query.get(profile_id)
     if not profile:
         return False
-    
+
+    # Nếu allow_admin_all=True (dành cho trang quản lý user), admin có thể xem tất cả
+    if allow_admin_all and current_user.is_admin:
+        return True
+
+    # Ngược lại, chỉ cho phép truy cập profile của chính mình
     return profile.user_id == current_user.id
 
 def get_user_profiles():
-    """Lấy danh sách profile mà user hiện tại có quyền truy cập"""
+    """Lấy danh sách profile của chính user hiện tại (cả admin và user đều chỉ xem profile của mình)"""
     from database import Profile
-    
+
+    # Cả admin và user đều chỉ xem profile của chính mình
+    return Profile.query.filter_by(user_id=current_user.id).all()
+
+def get_all_profiles():
+    """Lấy tất cả profile (chỉ dành cho admin trong trang quản lý)"""
+    from database import Profile
+
     if current_user.is_admin:
-        return Profile.query.all()  # Admin xem tất cả
+        return Profile.query.all()
     else:
-        return Profile.query.filter_by(user_id=current_user.id).all()  # User chỉ xem của mình
+        return []
