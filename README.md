@@ -124,17 +124,41 @@ Emission/
 └── venv/              # Virtual environment
 ```
 
+## Công nghệ sử dụng
+
+- **Backend**: Flask 3.1.2, SQLAlchemy 2.0.43
+- **Database**: SQLite (emission.db)
+- **Frontend**: Bootstrap 5, HTML5, JavaScript
+- **Excel**: OpenPyXL 3.1.5
+- **Word**: python-docx 1.2.0, docxtpl 0.16.7
+- **Data**: Pandas 2.3.2, NumPy 2.3.2
+
+## Phiên bản
+
+**v3.2** - Cập nhật 2025-09-07
+- ✅ Template Word với docxtpl
+- ✅ Popup chọn kỳ, năm, cơ quan tiếp nhận
+- ✅ Tính phí cố định 750,000 VNĐ
+- ✅ Chuyển đổi số thành chữ chính xác
+- ✅ Tên file xuất theo format: `{profile}_{ky}_{nam}_{timestamp}`
+
 ## Lưu ý
 
-- Dữ liệu được lưu trong bộ nhớ, sẽ mất khi restart ứng dụng
-- Để lưu trữ lâu dài, có thể tích hợp database (SQLite, PostgreSQL, etc.)
-- File xuất được lưu trong thư mục `uploads/`
+- Dữ liệu được lưu trong SQLite database (emission.db)
+- File template TO_KHAI.docx cần có trong thư mục gốc
 - Ứng dụng chạy ở chế độ debug, không sử dụng trong production
+- Hỗ trợ đầy đủ tiếng Việt
 
 ## Hỗ trợ
 
-Nếu gặp vấn đề, vui lòng kiểm tra:
-1. Python version >= 3.8
-2. Tất cả dependencies đã được cài đặt
-3. Port 5000 không bị chiếm dụng
-4. Quyền ghi file trong thư mục dự án
+Nếu gặp vấn đề:
+1. Chạy `python install_requirements.py` để kiểm tra dependencies
+2. Kiểm tra Python version >= 3.8
+3. Đảm bảo file TO_KHAI.docx tồn tại
+4. Port 5000 không bị chiếm dụng
+5. Quyền ghi file trong thư mục dự án
+
+---
+**Phát triển**: Emission Management System v3.2
+**Ngôn ngữ**: Tiếng Việt
+**License**: MIT
