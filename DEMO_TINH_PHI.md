@@ -38,6 +38,8 @@ Tổng phí = 750,000 + 1,549 = 751,549 VNĐ
 ### Chuyển đổi thành chữ
 ```
 751,549 VNĐ = "Bảy trăm năm mươi một nghìn năm trăm bốn mươi chín đồng"
+750,000 VNĐ = "Bảy trăm năm mươi nghìn đồng"
+1,549 VNĐ = "Một nghìn năm trăm bốn mươi chín đồng"
 ```
 
 ## Biến template sử dụng
@@ -69,7 +71,7 @@ Tổng phí = 750,000 + 1,549 = 751,549 VNĐ
     'phi_phat_sinh': 1549,
     'tong_phi': 751549,
     'result_data': {'Ci': 1549},
-    'so_tien_bang_chu': '751 nghìn đồng'
+    'so_tien_bang_chu': 'Bảy trăm năm mươi một nghìn năm trăm bốn mươi chín đồng'
 }
 ```
 

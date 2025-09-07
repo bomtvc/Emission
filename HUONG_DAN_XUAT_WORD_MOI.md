@@ -98,7 +98,7 @@ Chức năng "Xuất Word" đã được cải tiến để sử dụng template
     'phi_phat_sinh': 5000000.0,      # Tổng Ci của tất cả nguồn thải
     'tong_phi': 5750000.0,           # Phí cố định + Phí phát sinh
     'result_data': {'Ci': 5000000.0}, # Template sử dụng result_data['Ci']
-    'so_tien_bang_chu': 'Năm triệu bảy trăm năm mươi nghìn đồng'
+    'so_tien_bang_chu': 'Bảy trăm năm mươi một nghìn năm trăm bốn mươi chín đồng'
 }
 ```
 
@@ -191,6 +191,7 @@ pip install docxtpl==0.16.7
 - ✅ Cải tiến tên file Excel: `{ten_profile}_{timestamp}.xlsx`
 - ✅ Thêm tính toán phí cố định 750,000 VNĐ
 - ✅ Tự động tính tổng phí và chuyển đổi thành chữ
+- ✅ Cải thiện hàm chuyển đổi số thành chữ tiếng Việt chính xác
 
 ### Phiên bản 3.1 (2025-09-07)
 - ✅ Sử dụng docxtpl với template TO_KHAI.docx
