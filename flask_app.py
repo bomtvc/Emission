@@ -721,6 +721,77 @@ def export_word(profile_id):
         flash(f'Có lỗi xảy ra khi xuất Word: {str(e)}', 'error')
         return redirect(url_for('index', profile_id=profile.id))
 
+@app.route('/export_word_with_time/<int:profile_id>', methods=['POST'])
+@login_required_custom
+def export_word_with_time(profile_id):
+    """Xuất dữ liệu ra file Word với template và thông tin thời gian"""
+    profile = Profile.query.get_or_404(profile_id)
+
+    # Kiểm tra quyền sở hữu
+    if not check_profile_ownership(profile.id):
+        flash('Bạn không có quyền xuất dữ liệu từ profile này!', 'error')
+        return redirect(url_for('index'))
+
+    # Lấy thông tin thời gian từ form
+    ky = request.form.get('ky', '').strip()
+    nam = request.form.get('nam', '').strip()
+    co_quan_tiep_nhan = request.form.get('co_quan_tiep_nhan', '').strip()
+
+    if not ky or not nam or not co_quan_tiep_nhan:
+        flash('Vui lòng nhập đầy đủ kỳ, năm và cơ quan tiếp nhận!', 'error')
+        return redirect(url_for('index', profile_id=profile.id))
+
+    try:
+        records = profile.to_list_of_dicts()
+        if not records:
+            flash('Không có dữ liệu để xuất!', 'error')
+            return redirect(url_for('index', profile_id=profile.id))
+
+        # Chuẩn bị thông tin profile
+        profile_info = {
+            'ten_cong_ty': profile.ten_cong_ty,
+            'dia_chi': profile.dia_chi,
+            'mst': profile.mst,
+            'dien_thoai': profile.dien_thoai,
+            'fax': profile.fax,
+            'email': profile.email,
+            'tai_khoan_ngan_hang': profile.tai_khoan_ngan_hang,
+            'tai_ngan_hang': profile.tai_ngan_hang,
+            'loai_hinh_san_xuat': profile.loai_hinh_san_xuat
+        }
+
+        # Thông tin thời gian
+        time_info = {
+            'ky': ky,
+            'nam': nam,
+            'co_quan_tiep_nhan': co_quan_tiep_nhan
+        }
+
+        exporter = WordExporter()
+
+        # Đường dẫn template
+        template_path = os.path.join(basedir, 'TO_KHAI.docx')
+
+        # Tạo file tạm thời
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as tmp_file:
+            filepath = exporter.export_with_template(
+                records,
+                time_info=time_info,
+                profile_info=profile_info,
+                template_path=template_path,
+                output_path=tmp_file.name,
+                profile_name=profile.name
+            )
+
+            return send_file(filepath, as_attachment=True, download_name=os.path.basename(filepath))
+
+    except FileNotFoundError as e:
+        flash(f'Không tìm thấy file template: {str(e)}', 'error')
+        return redirect(url_for('index', profile_id=profile.id))
+    except Exception as e:
+        flash(f'Có lỗi xảy ra khi xuất Word: {str(e)}', 'error')
+        return redirect(url_for('index', profile_id=profile.id))
+
 @app.route('/export_json/<int:profile_id>')
 @login_required_custom
 def export_json(profile_id):

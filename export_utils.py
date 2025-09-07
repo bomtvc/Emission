@@ -6,8 +6,25 @@ from docx import Document
 from docx.shared import Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
+from docxtpl import DocxTemplate
 import os
 from datetime import datetime
+
+
+def so_thanh_chu(so):
+    """Chuyển đổi số thành chữ (đơn giản)"""
+    if so == 0:
+        return "Không đồng"
+
+    # Chuyển đổi đơn giản
+    if so < 1000:
+        return f"{int(so)} đồng"
+    elif so < 1000000:
+        return f"{int(so/1000)} nghìn đồng"
+    elif so < 1000000000:
+        return f"{int(so/1000000)} triệu đồng"
+    else:
+        return f"{int(so/1000000000)} tỷ đồng"
 
 
 class ExcelExporter:
@@ -300,5 +317,114 @@ class WordExporter:
             os.makedirs('uploads', exist_ok=True)
 
         self.document.save(filepath)
+
+        return filepath
+
+    def export_with_template(self, records_data, time_info, profile_info=None, template_path=None, filename=None, output_path=None, profile_name=None):
+        """
+        Xuất dữ liệu ra file Word sử dụng template docxtpl
+        """
+        if not template_path or not os.path.exists(template_path):
+            raise FileNotFoundError(f"Template file không tồn tại: {template_path}")
+
+        # Tạo filename với profile name
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        if not filename:
+            if profile_name:
+                # Làm sạch tên profile để sử dụng trong tên file
+                clean_profile_name = "".join(c for c in profile_name if c.isalnum() or c in (' ', '-', '_')).rstrip()
+                clean_profile_name = clean_profile_name.replace(' ', '_')
+                filename = f"{clean_profile_name}_{time_info['ky']}_{time_info['nam']}_{timestamp}.docx"
+            else:
+                filename = f"TO_KHAI_{time_info['ky']}_{time_info['nam']}_{timestamp}.docx"
+
+        # Load template
+        doc = DocxTemplate(template_path)
+
+        # Tính toán tổng phí
+        total_ci = sum(record.get('Ci', 0) for record in records_data)
+        phi_co_dinh = 750000  # Phí cố định 750,000 VNĐ
+        phi_phat_sinh = total_ci
+        tong_phi = phi_co_dinh + phi_phat_sinh
+
+
+
+        # Chuẩn bị context data theo template
+        context = {
+            # Thông tin thời gian
+            'ky': time_info.get('ky', ''),
+            'nam': time_info.get('nam', ''),
+            'quy': time_info.get('ky', ''),  # Alias cho ky
+            'co_quan_tiep_nhan': time_info.get('co_quan_tiep_nhan', ''),
+
+            # Thông tin công ty (direct variables)
+            'ten_cong_ty': profile_info.get('ten_cong_ty', '') if profile_info else '',
+            'dia_chi': profile_info.get('dia_chi', '') if profile_info else '',
+            'mst': profile_info.get('mst', '') if profile_info else '',
+            'dien_thoai': profile_info.get('dien_thoai', '') if profile_info else '',
+            'fax': profile_info.get('fax', '') if profile_info else '',
+            'email': profile_info.get('email', '') if profile_info else '',
+            'tai_khoan_ngan_hang': profile_info.get('tai_khoan_ngan_hang', '') if profile_info else '',
+            'tai_ngan_hang': profile_info.get('tai_ngan_hang', '') if profile_info else '',
+            'loai_hinh_san_xuat': profile_info.get('loai_hinh_san_xuat', '') if profile_info else '',
+
+            # Danh sách nguồn thải
+            'profile_records': [],
+            'danh_sach_nguon_thai': '',  # Sẽ là chuỗi liệt kê tên nguồn thải
+
+            # Thông tin phí
+            'phi_co_dinh': phi_co_dinh,
+            'phi_do_dinh': phi_co_dinh,  # Alias
+            'phi_phat_sinh': phi_phat_sinh,
+            'tong_phi': tong_phi,
+            'result_data': {'Ci': total_ci},  # Template sử dụng result_data['Ci']
+            'so_tien_bang_chu': so_thanh_chu(tong_phi)
+        }
+
+        # Chuyển đổi records data theo format template
+        ten_nguon_thai_list = []
+        for record in records_data:
+            record_context = {
+                'stt': record.get('STT', ''),
+                'ten_nguon_thai': record.get('Tên Nguồn thải', ''),
+                "'ten_nguon_thai'": record.get('Tên Nguồn thải', ''),  # Template có dấu nháy
+                'luu_luong': record.get('Lưu lượng (Nm3/h)', 0),
+                'tong_thoi_gian': record.get('Tổng thời gian xả thải trong kỳ (Giờ)', 0),
+                "'tong_thoi_gian'": record.get('Tổng thời gian xả thải trong kỳ (Giờ)', 0),  # Template có dấu nháy
+                'thong_tin_don_vi': record.get('Thông tin đơn vị Phân tích', ''),
+                'bui': record.get('Bụi (mg/Nm3)', 0),
+                'nox': record.get('NOx (gồm NO2 và NO) (mg/Nm3)', 0),
+                'sox': record.get('SOx (mg/Nm3)', 0),
+                'co': record.get('CO (mg/Nm3)', 0),
+                'ci_bui': record.get('Ci (Bụi)', 0),
+                'ci_nox': record.get('Ci (NOx)', 0),
+                'ci_sox': record.get('Ci (SOx)', 0),
+                'ci_co': record.get('Ci (CO)', 0),
+                'Ci_bui': record.get('Ci (Bụi)', 0),  # Template sử dụng Ci_bui
+                'Ci_nox': record.get('Ci (NOx)', 0),
+                'Ci_sox': record.get('Ci (SOx)', 0),
+                'Ci_co': record.get('Ci (CO)', 0)
+            }
+            context['profile_records'].append(record_context)
+
+            # Thêm tên nguồn thải vào danh sách
+            ten_nguon_thai_list.append(record.get('Tên Nguồn thải', ''))
+
+        # Tạo chuỗi danh sách nguồn thải
+        context['danh_sach_nguon_thai'] = ', '.join(ten_nguon_thai_list)
+
+        # Render template
+        doc.render(context)
+
+        # Lưu file
+        if output_path:
+            # Sử dụng output_path nhưng đổi tên file thành filename
+            output_dir = os.path.dirname(output_path)
+            filepath = os.path.join(output_dir, filename) if output_dir else filename
+        else:
+            filepath = os.path.join('uploads', filename)
+            os.makedirs('uploads', exist_ok=True)
+
+        doc.save(filepath)
 
         return filepath

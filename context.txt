@@ -1,0 +1,6 @@
+context = {
+    'time': ['ky', 'nam', 'co_quan_tiep_nhan],
+    'profile_info': ['ten_cong_ty', 'dia_chi', 'mst', 'dien_thoai', 'fax', 'email', 'tai_khoan_ngan_hang', 'tai_ngan_hang', 'loai_hinh_san_xuat'],
+    'records': ['stt', 'ten_nguon_thai', 'luu_luong', 'tong_thoi_gian', 'thong_tin_don_vi', 'bui', 'nox', 'sox', 'co', 'ci_bui', 'ci_nox', 'ci_sox', 'ci_co'],
+    'total': ['total_ci', 'phi_co_dinh', 'phi_phat_sinh', 'tong_phi', 'tong_phi_bang_chu']
+}

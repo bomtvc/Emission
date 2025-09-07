@@ -93,9 +93,9 @@
                             <a href="{{ url_for('export_excel', profile_id=current_profile.id) }}" class="btn btn-success btn-sm">
                                 <i class="fas fa-file-excel"></i> Xuất Excel
                             </a>
-                            <a href="{{ url_for('export_word', profile_id=current_profile.id) }}" class="btn btn-info btn-sm">
+                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#exportWordModal">
                                 <i class="fas fa-file-word"></i> Xuất Word
-                            </a>
+                            </button>
                             <a href="{{ url_for('clear_all', profile_id=current_profile.id) }}" class="btn btn-danger btn-sm"
                                onclick="return confirm('Bạn có chắc chắn muốn xóa tất cả dữ liệu?')">
                                 <i class="fas fa-trash"></i> Xóa tất cả
@@ -234,6 +234,60 @@
     </div>
 </div>
 {% endif %}
+
+<!-- Modal Xuất Word -->
+<div class="modal fade" id="exportWordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-file-word"></i> Xuất Tờ Khai Word</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="exportWordForm" method="POST" action="{{ url_for('export_word_with_time', profile_id=current_profile.id if current_profile else 0) }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ky" class="form-label">Kỳ <span class="text-danger">*</span></label>
+                                <select class="form-select" id="ky" name="ky" required>
+                                    <option value="">-- Chọn kỳ --</option>
+                                    <option value="I">I</option>
+                                    <option value="II">II</option>
+                                    <option value="III">III</option>
+                                    <option value="IV">IV</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nam" class="form-label">Năm <span class="text-danger">*</span></label>
+                                <select class="form-select" id="nam" name="nam" required>
+                                    <option value="">-- Chọn năm --</option>
+                                    <!-- Sẽ được tạo bằng JavaScript -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="co_quan_tiep_nhan" class="form-label">Cơ quan tiếp nhận <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="co_quan_tiep_nhan" name="co_quan_tiep_nhan"
+                               placeholder="Sở Nông nghiệp và Môi trường Thành phố Hồ Chí Minh" required>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Chọn kỳ, năm và nhập cơ quan tiếp nhận để xuất tờ khai theo template Word.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-download"></i> Xuất Tờ Khai
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -243,5 +297,19 @@ function switchProfile(profileId) {
         window.location.href = "{{ url_for('index') }}?profile_id=" + profileId;
     }
 }
+
+// Tạo danh sách năm từ 2025 đến năm hiện tại
+document.addEventListener('DOMContentLoaded', function() {
+    const namSelect = document.getElementById('nam');
+    const currentYear = new Date().getFullYear();
+    const startYear = 2025;
+
+    for (let year = startYear; year <= currentYear; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        namSelect.appendChild(option);
+    }
+});
 </script>
 {% endblock %}
