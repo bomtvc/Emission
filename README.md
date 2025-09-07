@@ -4,13 +4,15 @@ Webapp Flask để nhập dữ liệu phát thải, tính toán phí bảo vệ 
 
 ## Tính năng chính
 
-- ✅ Nhập dữ liệu nguồn thải khí
-- ✅ Tự động tính toán mức thu phí biến đổi
-- ✅ Tính toán giá trị Ci theo công thức quy định
-- ✅ Xuất báo cáo Excel với định dạng đẹp
-- ✅ Xuất báo cáo Word với template chuyên nghiệp
-- ✅ Xem trước kết quả tính toán
-- ✅ Quản lý danh sách nguồn thải
+- 🔐 **Xác thực người dùng**: Đăng ký, đăng nhập, quản lý tài khoản
+- 🏭 **Quản lý Profile**: Thông tin cơ sở công nghiệp, công ty
+- 📊 **Quản lý nguồn thải**: Thêm, sửa, xóa bản ghi phát thải
+- 📤 **Import/Export Excel**: Nhập và xuất dữ liệu Excel
+- 📄 **Xuất Word với template**: Tờ khai theo mẫu chính thức
+- 💰 **Tính phí tự động**: Phí cố định 750,000 VNĐ + phí phát sinh
+- 🔢 **Chuyển số thành chữ**: Tiếng Việt chuẩn
+- ⏰ **Chọn kỳ báo cáo**: I, II, III, IV và năm
+- 🏢 **Cơ quan tiếp nhận**: Tùy chỉnh theo địa phương
 
 ## Cài đặt
 
@@ -25,16 +27,20 @@ Webapp Flask để nhập dữ liệu phát thải, tính toán phí bảo vệ 
 
 3. **Cài đặt dependencies**
    ```bash
+   # Cách 1: Sử dụng script tự động
+   python install_requirements.py
+
+   # Cách 2: Cài đặt thủ công
    pip install -r requirements.txt
    ```
 
 ## Chạy ứng dụng
 
 ```bash
-python app.py
+python flask_app.py
 ```
 
-Mở trình duyệt và truy cập: `http://localhost:5000`
+Mở trình duyệt và truy cập: `http://127.0.0.1:5000`
 
 ## Hướng dẫn sử dụng
 
@@ -57,9 +63,26 @@ Mở trình duyệt và truy cập: `http://localhost:5000`
 
 ### 3. Xuất báo cáo
 - **Excel**: Click "Xuất Excel" để tải file .xlsx với đầy đủ dữ liệu
-- **Word**: Click "Xuất Word" để tải file .docx với báo cáo chuyên nghiệp
+  - Format: `{ten_profile}_{timestamp}.xlsx`
+- **Word**: Click "Xuất Word" để mở popup chọn thông tin
+  - Chọn Kỳ: I, II, III, IV
+  - Chọn Năm: 2025 đến năm hiện tại
+  - Nhập Cơ quan tiếp nhận
+  - Format: `{ten_profile}_{ky}_{nam}_{timestamp}.docx`
 
 ## Công thức tính toán
+
+### Tính phí môi trường
+```
+Tổng phí = Phí cố định + Phí phát sinh
+         = 750,000 VNĐ + Σ(Ci của tất cả nguồn thải)
+```
+
+### Ví dụ tính toán
+- **Phí cố định**: 750,000 VNĐ
+- **Phí phát sinh**: 1,549 VNĐ (tổng Ci)
+- **Tổng phí**: 751,549 VNĐ
+- **Bằng chữ**: "Bảy trăm năm mươi một nghìn năm trăm bốn mươi chín đồng"
 
 ### Mức thu phí biến đổi
 ```
@@ -69,7 +92,7 @@ Ngược lại < 0.3 → Hệ số = 0.75
 
 ### Hệ số phí cố định
 - Fee_Bụi = 800 VNĐ
-- Fee_NOx = 700 VNĐ  
+- Fee_NOx = 700 VNĐ
 - Fee_SOx = 800 VNĐ
 - Fee_CO = 500 VNĐ
 
@@ -82,19 +105,23 @@ Tổng Ci = Ci(Bụi) + Ci(NOx) + Ci(SOx) + Ci(CO)
 ## Cấu trúc dự án
 
 ```
-emission/
-├── app.py              # File chính Flask
-├── models.py           # Model dữ liệu
-├── export_utils.py     # Utilities xuất file
-├── requirements.txt    # Dependencies
-├── templates/          # Templates HTML
+Emission/
+├── flask_app.py           # Ứng dụng chính Flask
+├── database.py            # Models cơ sở dữ liệu
+├── auth.py               # Xác thực người dùng
+├── export_utils.py       # Xuất Excel/Word
+├── emission.db           # Database SQLite
+├── TO_KHAI.docx         # Template Word
+├── requirements.txt      # Dependencies
+├── install_requirements.py # Script cài đặt
+├── templates/           # HTML templates
 │   ├── base.html
 │   ├── index.html
+│   ├── login.html
 │   ├── add_record.html
 │   └── view_record.html
-├── static/            # CSS, JS, images
-├── uploads/           # Thư mục chứa file xuất
-└── venv/             # Môi trường ảo Python
+├── static/             # CSS, JS, images
+└── venv/              # Virtual environment
 ```
 
 ## Lưu ý
